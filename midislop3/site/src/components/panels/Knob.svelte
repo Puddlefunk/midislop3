@@ -34,6 +34,14 @@
     size        = Math.round(em * 3.4);
     faderWidth  = Math.round(em * 2.2);
     faderHeight = Math.round(em * 8.4);
+
+    // Draw immediately after sizing so knob appears before interaction
+    // (Svelte won't run $effect synchronously after state change in onMount)
+    setTimeout(() => {
+      if (isFader) drawFader(canvasEl, v01(), hue, focused);
+      else if (bipolar) drawBipolarKnob(canvasEl, v01(), hue, focused);
+      else drawKnob(canvasEl, v01(), hue, focused);
+    }, 0);
   });
 
   $effect(() => {

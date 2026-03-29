@@ -58,6 +58,12 @@
     const em = parseFloat(getComputedStyle(waveCanvas).fontSize);
     waveW = Math.round(em * 9);
     waveH = Math.round(em * 2.8);
+
+    // Draw immediately after sizing so waveform appears before interaction
+    setTimeout(() => {
+      const paramVal = specialParam ? ((params[specialParam] as number) ?? 0) : 0;
+      drawWavePreview(waveCanvas, getPreviewWf(), paramVal);
+    }, 0);
   });
 
   $effect(() => {
