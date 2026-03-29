@@ -28,6 +28,18 @@
   let fxJackLighting    = $state(gameState.fx['jackLighting'] ?? true);
   let folScale          = $state(gameState.folScale);
 
+  // UI scale
+  const UI_SCALE_KEY = 'uiScale';
+  let uiScale = $state(parseFloat(localStorage.getItem(UI_SCALE_KEY) ?? '1'));
+  $effect(() => {
+    document.documentElement.style.setProperty('--ui-scale', String(uiScale));
+  });
+
+  function onUiScaleInput(e: Event) {
+    uiScale = parseFloat((e.target as HTMLInputElement).value);
+    localStorage.setItem(UI_SCALE_KEY, String(uiScale));
+  }
+
   // Confirm dialog
   let confirmOpen = $state(false);
 
@@ -204,11 +216,19 @@
       </div>
     </div>
 
-    <div class="mp-section mp-section-last">
+    <div class="mp-section">
       <div class="mp-section-label">NODE SCALE</div>
       <div class="mp-scale-row">
         <input type="range" min="0.3" max="2" step="0.05" value={folScale} oninput={onScaleInput} />
         <span class="mp-scale-val">{folScale.toFixed(2)}</span>
+      </div>
+    </div>
+
+    <div class="mp-section mp-section-last">
+      <div class="mp-section-label">UI SCALE</div>
+      <div class="mp-scale-row">
+        <input type="range" min="0.7" max="1.5" step="0.05" value={uiScale} oninput={onUiScaleInput} />
+        <span class="mp-scale-val">{Math.round(uiScale * 100)}%</span>
       </div>
     </div>
   </div>
@@ -234,32 +254,32 @@
   /* ── Panel container ─────────────────────────────────────────── */
   #menu-panel {
     position: fixed;
-    bottom: 50px; left: 50%; transform: translateX(-50%);
-    width: 260px;
+    bottom: 4.5em; left: 50%; transform: translateX(-50%);
+    width: min(24em, 92vw);
     z-index: 200;
     border: 1px solid rgba(255,255,255,.18);
-    border-radius: 8px;
+    border-radius: 0.7em;
     background:
       linear-gradient(180deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.02) 30%, rgba(0,0,0,0) 60%),
       rgba(12,12,16,.92);
     backdrop-filter: blur(22px) brightness(.72);
     box-shadow: 0 6px 36px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09);
     font-family: 'Courier New', monospace;
-    font-size: 11px;
+    font-size: var(--fs-ui);
   }
 
   /* ── Header ──────────────────────────────────────────────────── */
   .mp-header {
-    display: flex; align-items: center; padding: 13px 12px 11px;
+    display: flex; align-items: center; padding: 1.2em 1.1em 1em;
     border-bottom: 1px solid rgba(255,255,255,.07);
   }
   .mp-title {
-    flex: 1; font-size: 9px; letter-spacing: 4px;
+    flex: 1; font-size: 0.8em; letter-spacing: 0.35em;
     color: rgba(255,255,255,.32); text-transform: uppercase;
   }
   .mp-close {
-    background: none; border: none; padding: 0 0 0 6px;
-    color: rgba(255,255,255,.28); cursor: pointer; font-size: 12px; line-height: 1;
+    background: none; border: none; padding: 0 0 0 0.5em;
+    color: rgba(255,255,255,.28); cursor: pointer; font-size: 1.1em; line-height: 1;
   }
   .mp-close:hover { color: rgba(255,255,255,.7); }
 
@@ -269,32 +289,29 @@
     flex: 1; background: none; border: none;
     border-bottom: 2px solid transparent;
     color: rgba(255,255,255,.28);
-    font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 3px;
-    padding: 9px 0 7px; cursor: pointer;
+    font-family: 'Courier New', monospace; font-size: 0.8em; letter-spacing: 0.27em;
+    padding: 0.8em 0 0.65em; cursor: pointer;
     transition: color .15s, border-color .15s;
   }
   .mp-tab:hover { color: rgba(255,255,255,.55); }
   .mp-tab.active { color: rgba(255,255,255,.75); border-bottom-color: rgba(255,255,255,.3); }
 
-  /* ── Pane ────────────────────────────────────────────────────── */
-  .mp-pane {}
-
   /* ── Sections ────────────────────────────────────────────────── */
   .mp-section {
-    padding: 10px 12px 6px;
+    padding: 0.9em 1.1em 0.55em;
     border-bottom: 1px solid rgba(255,255,255,.05);
   }
-  .mp-section-last { border-bottom: none; padding-bottom: 12px; }
+  .mp-section-last { border-bottom: none; padding-bottom: 1.1em; }
   .mp-section-label {
-    font-size: 8px; letter-spacing: 3px;
-    color: rgba(255,255,255,.22); text-transform: uppercase; margin-bottom: 6px;
+    font-size: 0.75em; letter-spacing: 0.27em;
+    color: rgba(255,255,255,.22); text-transform: uppercase; margin-bottom: 0.55em;
   }
 
   /* ── Mode option buttons ─────────────────────────────────────── */
   .mp-opt {
     width: 100%; display: flex; align-items: center;
-    background: none; border: 1px solid transparent; border-radius: 4px;
-    padding: 7px 8px; margin-bottom: 3px; cursor: pointer; text-align: left;
+    background: none; border: 1px solid transparent; border-radius: 0.35em;
+    padding: 0.65em 0.7em; margin-bottom: 0.25em; cursor: pointer; text-align: left;
     transition: background .12s, border-color .12s;
   }
   .mp-opt:last-child { margin-bottom: 0; }
@@ -302,57 +319,57 @@
     background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.1);
   }
   .mp-opt.active      { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); }
-  .mp-opt-name        { font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,.7); min-width: 80px; }
+  .mp-opt-name        { font-size: 0.9em; letter-spacing: 0.18em; color: rgba(255,255,255,.7); min-width: 7em; }
   .mp-opt.active .mp-opt-name { color: rgba(255,255,255,.95); }
-  .mp-opt-desc        { font-size: 9px; color: rgba(255,255,255,.28); flex: 1; }
-  .mp-opt-tag         { font-size: 9px; color: rgba(255,255,255,.2); letter-spacing: 1px; margin-left: 6px; }
+  .mp-opt-desc        { font-size: 0.85em; color: rgba(255,255,255,.28); flex: 1; }
+  .mp-opt-tag         { font-size: 0.8em; color: rgba(255,255,255,.2); letter-spacing: 0.09em; margin-left: 0.55em; }
   .mp-opt-locked      { opacity: .3; pointer-events: none; }
   .mp-opt-soon        { opacity: .35; cursor: default; }
 
   /* ── Toggle rows ─────────────────────────────────────────────── */
   .mp-toggle-row {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 8px;
+    margin-bottom: 0.7em;
   }
   .mp-toggle-row:last-child { margin-bottom: 0; }
-  .mp-toggle-label { font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,.45); }
+  .mp-toggle-label { font-size: 0.8em; letter-spacing: 0.18em; color: rgba(255,255,255,.45); }
   .mp-toggle {
-    width: 28px; height: 14px; border-radius: 7px;
+    width: 2.5em; height: 1.27em; border-radius: 0.64em;
     border: 1px solid rgba(255,255,255,.2);
     background: rgba(255,255,255,.08); cursor: pointer; position: relative;
     transition: background .18s, border-color .18s; flex-shrink: 0;
   }
   .mp-toggle::after {
-    content: ''; position: absolute; top: 2px; left: 2px;
-    width: 8px; height: 8px; border-radius: 50%;
+    content: ''; position: absolute; top: 0.18em; left: 0.18em;
+    width: 0.73em; height: 0.73em; border-radius: 50%;
     background: rgba(255,255,255,.35);
     transition: transform .18s, background .18s;
   }
   .mp-toggle.on { background: rgba(120,255,160,.18); border-color: rgba(120,255,160,.4); }
-  .mp-toggle.on::after { transform: translateX(14px); background: rgba(120,255,160,.9); }
+  .mp-toggle.on::after { transform: translateX(1.27em); background: rgba(120,255,160,.9); }
 
   /* ── Octave control ──────────────────────────────────────────── */
-  .mp-oct-ctrl { display: flex; align-items: center; gap: 4px; }
+  .mp-oct-ctrl { display: flex; align-items: center; gap: 0.35em; }
   .mp-oct-btn {
     background: none; border: 1px solid rgba(255,255,255,.15);
-    color: rgba(255,255,255,.55); padding: 1px 7px;
-    border-radius: 2px; cursor: pointer; font-family: inherit; font-size: 12px;
+    color: rgba(255,255,255,.55); padding: 0.1em 0.6em;
+    border-radius: 0.2em; cursor: pointer; font-family: inherit; font-size: 1.1em;
   }
   .mp-oct-btn:hover { background: rgba(255,255,255,.07); }
-  .mp-oct-val { font-size: 9px; color: rgba(255,255,255,.5); min-width: 22px; text-align: center; }
+  .mp-oct-val { font-size: 0.8em; color: rgba(255,255,255,.5); min-width: 2em; text-align: center; }
 
   /* ── Node scale slider ───────────────────────────────────────── */
-  .mp-scale-row { display: flex; align-items: center; gap: 8px; }
+  .mp-scale-row { display: flex; align-items: center; gap: 0.7em; }
   .mp-scale-row input[type=range] { flex: 1; accent-color: rgba(120,255,160,.8); }
-  .mp-scale-val { font-size: 9px; color: rgba(255,255,255,.45); min-width: 28px; text-align: right; }
+  .mp-scale-val { font-size: 0.8em; color: rgba(255,255,255,.45); min-width: 2.5em; text-align: right; }
 
   /* ── New game button ─────────────────────────────────────────── */
   .mp-new-game-btn {
     width: 100%;
     background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
     color: rgba(255,255,255,.35); font-family: 'Courier New', monospace;
-    font-size: 10px; padding: 7px 0; cursor: pointer; letter-spacing: 3px;
-    transition: background .15s, color .15s, border-color .15s; border-radius: 3px;
+    font-size: 0.9em; padding: 0.65em 0; cursor: pointer; letter-spacing: 0.27em;
+    transition: background .15s, color .15s, border-color .15s; border-radius: 0.25em;
   }
   .mp-new-game-btn:hover {
     background: rgba(255,80,80,.1); border-color: rgba(255,80,80,.3); color: rgba(255,160,160,.8);
@@ -366,21 +383,21 @@
   }
   #confirm-box {
     background: rgba(12,12,16,.97); border: 1px solid rgba(255,255,255,.18);
-    border-radius: 8px; padding: 28px 32px; text-align: center;
-    font-family: 'Courier New', monospace;
-    box-shadow: 0 8px 48px rgba(0,0,0,.7); max-width: 280px;
+    border-radius: 0.7em; padding: 2.5em 2.9em; text-align: center;
+    font-family: 'Courier New', monospace; font-size: var(--fs-ui);
+    box-shadow: 0 8px 48px rgba(0,0,0,.7); max-width: min(26em, 92vw);
   }
   #confirm-msg {
-    font-size: 13px; letter-spacing: 2px; color: rgba(255,255,255,.85); margin-bottom: 8px;
+    font-size: 1.2em; letter-spacing: 0.18em; color: rgba(255,255,255,.85); margin-bottom: 0.7em;
   }
   #confirm-sub {
-    font-size: 10px; color: rgba(255,255,255,.3); letter-spacing: 1px; margin-bottom: 22px;
+    font-size: 0.9em; color: rgba(255,255,255,.3); letter-spacing: 0.09em; margin-bottom: 2em;
   }
-  #confirm-btns { display: flex; gap: 10px; justify-content: center; }
+  #confirm-btns { display: flex; gap: 0.9em; justify-content: center; }
   .confirm-yes, .confirm-no {
     background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.18);
     color: rgba(255,255,255,.6); font-family: 'Courier New', monospace;
-    font-size: 10px; padding: 7px 22px; cursor: pointer; letter-spacing: 2px;
+    font-size: 0.9em; padding: 0.65em 2em; cursor: pointer; letter-spacing: 0.18em;
     transition: background .15s, color .15s, border-color .15s;
   }
   .confirm-yes:hover {

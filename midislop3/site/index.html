@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M1D1SL0P3</title>
+  <script>
+    const _s = parseFloat(localStorage.getItem('uiScale') || '1');
+    if (_s !== 1) document.documentElement.style.setProperty('--ui-scale', String(_s));
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

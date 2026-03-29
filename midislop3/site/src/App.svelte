@@ -350,28 +350,39 @@
               <NoteSeqPanel modId={mod.id} type={mod.type} params={mod.params} />
             {:else if mod.type === 'drumSeq'}
               <DrumSeqPanel modId={mod.id} type={mod.type} params={mod.params} />
-            {:else if def.category === 'osc' || def.category === 'drum'}
+            {:else if def.category === 'osc'}
               <OscPanel modId={mod.id} type={mod.type} params={mod.params} />
             {:else}
               <GenericPanel modId={mod.id} type={mod.type} params={mod.params} />
             {/if}
           {/snippet}
           {#snippet jacksL()}
-            {#each (def.inputPorts ?? []) as port}
-              {#if !port.name.startsWith('return-')}
+            {#if mod.type !== 'chord'}
+              {#each (def.inputPorts ?? []).filter(p => !p.name.startsWith('return-')) as port}
                 <Jack modId={mod.id} port={port.name} isOut={false} signal={port.signal} />
+              {/each}
+              {@const returns = (def.inputPorts ?? []).filter(p => p.name.startsWith('return-'))}
+              {#if returns.length > 0}
+                <div class="jack-push-spacer"></div>
+                {#each returns as port}
+                  <Jack modId={mod.id} port={port.name} isOut={false} signal={port.signal} />
+                {/each}
               {/if}
-            {/each}
+            {/if}
           {/snippet}
           {#snippet jacksR()}
-            {#each (def.outputPorts ?? []) as port}
-              <Jack modId={mod.id} port={port.name} isOut={true} signal={port.signal} />
-            {/each}
-            {#each (def.inputPorts ?? []) as port}
-              {#if port.name.startsWith('return-')}
-                <Jack modId={mod.id} port={port.name} isOut={false} signal={port.signal} />
+            {#if mod.type !== 'chord'}
+              {#each (def.outputPorts ?? []).filter(p => !p.name.startsWith('send-')) as port}
+                <Jack modId={mod.id} port={port.name} isOut={true} signal={port.signal} />
+              {/each}
+              {@const sends = (def.outputPorts ?? []).filter(p => p.name.startsWith('send-'))}
+              {#if sends.length > 0}
+                <div class="jack-push-spacer"></div>
+                {#each sends as port}
+                  <Jack modId={mod.id} port={port.name} isOut={true} signal={port.signal} />
+                {/each}
               {/if}
-            {/each}
+            {/if}
           {/snippet}
         </ModulePanel>
       {/if}
@@ -456,7 +467,7 @@
 
   #status {
     position: fixed; top: 42px; left: 50%; transform: translateX(-50%);
-    font-size: 10px; color: rgba(255,255,255,0.3);
+    font-size: var(--fs-small); color: rgba(255,255,255,0.3);
     z-index: 200; pointer-events: none;
   }
 
@@ -472,20 +483,22 @@
     position: fixed; top: 44px; right: 18px;
     text-align: right; z-index: 50;
     pointer-events: none;
+    font-size: var(--fs-ui);
   }
-  #score-val { font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.9); }
-  #level-val  { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; }
-  #streak-val { font-size: 12px; color: rgba(255,185,55,0.8); margin-top: 2px; }
+  #score-val { font-size: 2.2em; font-weight: 700; color: rgba(255,255,255,0.9); }
+  #level-val  { font-size: 1em; color: rgba(255,255,255,0.4); margin-top: 0.2em; }
+  #streak-val { font-size: 1.2em; color: rgba(255,185,55,0.8); margin-top: 0.2em; }
 
   #challenge {
     position: fixed; top: 44px; left: 50%; transform: translateX(-50%);
     text-align: center; z-index: 50; pointer-events: none;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    display: flex; flex-direction: column; align-items: center; gap: 0.4em;
+    font-size: var(--fs-ui);
   }
-  .prompt    { font-size: 9px; color: rgba(255,255,255,0.3); letter-spacing: 2px; min-height: 14px; }
-  .chord-name { font-size: 20px; font-weight: 700; min-height: 28px; transition: color 0.3s; }
+  .prompt    { font-size: 0.9em; color: rgba(255,255,255,0.3); letter-spacing: 0.18em; min-height: 1.4em; }
+  .chord-name { font-size: 2em; font-weight: 700; min-height: 2.8em; transition: color 0.3s; }
   #timer-bar {
-    width: 120px; height: 3px;
+    width: 12em; height: 3px;
     background: rgba(255,255,255,0.1);
     border-radius: 2px; overflow: hidden;
   }
@@ -493,17 +506,18 @@
 
   #game-controls {
     position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 8px; z-index: 100;
+    display: flex; gap: 0.7em; z-index: 100;
+    font-size: var(--fs-ui);
   }
   #game-controls button {
     font-family: 'Courier New', monospace;
-    font-size: 10px; font-weight: 600;
-    padding: 5px 12px;
+    font-size: 1em; font-weight: 600;
+    padding: 0.45em 1.1em;
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.15);
     color: rgba(255,255,255,0.75);
-    border-radius: 3px; cursor: pointer;
-    letter-spacing: 1px;
+    border-radius: 0.25em; cursor: pointer;
+    letter-spacing: 0.09em;
   }
   #game-controls button:hover { background: rgba(255,255,255,0.12); }
   #game-controls button.active { background: rgba(100,200,255,0.12); border-color: rgba(100,200,255,0.3); color: rgba(140,220,255,0.9); }
@@ -511,18 +525,19 @@
 
   #dev-console {
     position: fixed; bottom: 10px; left: 12px;
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center; gap: 0.7em;
     z-index: 100;
+    font-size: var(--fs-small);
   }
   #console-input {
     font-family: 'Courier New', monospace;
-    font-size: 9px;
+    font-size: 1em;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.10);
     color: rgba(255,255,255,0.5);
-    padding: 3px 8px;
-    border-radius: 2px;
-    width: 100px;
+    padding: 0.3em 0.7em;
+    border-radius: 0.2em;
+    width: 9em;
     outline: none;
   }
   #console-input:focus {
@@ -532,7 +547,7 @@
   }
   #console-input::placeholder { color: rgba(255,255,255,0.18); }
   #console-msg {
-    font-size: 9px; color: rgba(100,255,140,0.75);
+    font-size: 1em; color: rgba(100,255,140,0.75);
     letter-spacing: 0.05em;
   }
 </style>

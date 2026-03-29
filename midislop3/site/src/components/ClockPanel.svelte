@@ -157,51 +157,51 @@
   #clock-panel {
     position: fixed;
     top: 0; left: 0;
-    display: flex; align-items: center; gap: 8px;
-    padding: 6px 14px;
+    display: flex; align-items: center; gap: 0.7em;
+    padding: 0.5em 1.2em;
     background: rgba(12,12,18,0.92);
     border-bottom: 1px solid rgba(255,255,255,0.08);
     backdrop-filter: blur(8px);
     z-index: 100;
     font-family: 'Courier New', monospace;
-    font-size: 11px;
+    font-size: var(--fs-ui);
     color: rgba(255,255,255,0.7);
     user-select: none;
   }
 
   #clock-play-btn {
     background: none; border: 1px solid rgba(255,255,255,0.2);
-    color: rgba(255,255,255,0.8); padding: 3px 8px;
-    border-radius: 3px; cursor: pointer; font-size: 10px;
+    color: rgba(255,255,255,0.8); padding: 0.25em 0.7em;
+    border-radius: 0.25em; cursor: pointer; font-size: 0.9em;
   }
   #clock-play-btn:hover { background: rgba(255,255,255,0.08); }
   #clock-play-btn.playing { background: rgba(100,220,160,0.15); border-color: rgba(100,220,160,0.45); color: rgba(120,240,180,1); }
 
   #clock-bpm-wrap {
-    cursor: ns-resize; padding: 2px 6px;
-    border-radius: 3px;
+    cursor: ns-resize; padding: 0.2em 0.5em;
+    border-radius: 0.25em;
   }
   #clock-bpm-wrap:hover { background: rgba(255,255,255,0.06); }
-  #clock-bpm-val { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); }
-  .clock-bpm-unit { font-size: 9px; color: rgba(255,255,255,0.4); }
+  #clock-bpm-val { font-size: 1.2em; font-weight: 600; color: rgba(255,255,255,0.9); }
+  .clock-bpm-unit { font-size: 0.8em; color: rgba(255,255,255,0.4); }
 
   .clock-divider {
-    width: 1px; height: 16px;
+    width: 1px; height: 1.4em;
     background: rgba(255,255,255,0.1);
-    margin: 0 2px;
+    margin: 0 0.2em;
   }
 
-  .key-selector { display: flex; gap: 4px; }
+  .key-selector { display: flex; gap: 0.4em; }
   .key-btn {
     font-family: 'Courier New', monospace;
-    font-size: 10px;
+    font-size: 0.9em;
     background: rgba(255,255,255,0.05);
     color: rgba(255,255,255,0.8);
     border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 2px;
-    padding: 2px 6px;
+    border-radius: 0.2em;
+    padding: 0.2em 0.5em;
     cursor: pointer;
-    min-width: 28px;
+    min-width: 2.5em;
   }
   .key-btn:hover { background: rgba(255,255,255,0.12); }
 
@@ -210,7 +210,7 @@
     border: 1px solid rgba(255,175,40,0.35);
     color: rgba(255,175,40,0.7);
     font-family: 'Courier New', monospace;
-    font-size: 9px; padding: 2px 6px; border-radius: 2px; cursor: pointer;
+    font-size: 0.8em; padding: 0.2em 0.5em; border-radius: 0.2em; cursor: pointer;
   }
   .clock-ext-btn.active {
     background: rgba(255,175,40,0.15);
@@ -223,7 +223,7 @@
     border: 1px solid rgba(255,100,220,0.35);
     color: rgba(255,100,220,0.7);
     font-family: 'Courier New', monospace;
-    font-size: 9px; padding: 2px 6px; border-radius: 2px; cursor: pointer;
+    font-size: 0.8em; padding: 0.2em 0.5em; border-radius: 0.2em; cursor: pointer;
   }
   .clock-learn-btn.active {
     background: rgba(255,100,220,0.15);
@@ -242,7 +242,7 @@
   }
 
   .mp-dot {
-    width: 7px; height: 7px; border-radius: 50%;
+    width: 0.6em; height: 0.6em; border-radius: 50%;
     background: rgba(255,255,255,0.15);
     display: inline-block;
   }
