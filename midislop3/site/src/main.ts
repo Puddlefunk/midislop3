@@ -27,10 +27,14 @@ const gameEngine = new GameEngine(registry, state, router);
 const midiLearn  = new MidiLearnSystem(registry);
 router.onCC((cc, value) => midiLearn.handleCC(cc, value));
 
+// ── Pre-create PatchSystem so it can be passed as a Svelte prop ──
+// PatchSystem only needs registry at construction time; mount(canvas) is called after DOM is ready
+const patchSystemEarly = new PatchSystem(registry);
+
 // ── Mount Svelte UI ───────────────────────────────────────────
 const app = mount(App, {
   target: document.getElementById('app')!,
-  props: { gameState: state, registry, gameEngine },
+  props: { gameState: state, registry, gameEngine, patchSystem: patchSystemEarly },
 });
 
 // ── Mount visual and patch canvases after DOM is ready ────────
@@ -46,7 +50,7 @@ function resize() {
 }
 
 let visualEngine:     VisualEngine     | null = null;
-let patchSystem:      PatchSystem      | null = null;
+const patchSystem = patchSystemEarly;
 let uiRenderer:       UIRenderer       | null = null;
 let onscreenKeyboard: OnscreenKeyboard | null = null;
 
@@ -57,7 +61,6 @@ if (mainCanvas && patchCanvas) {
     width:  window.innerWidth,
     height: window.innerHeight,
   });
-  patchSystem = new PatchSystem(registry);
   patchSystem.mount(patchCanvas);
   uiRenderer = new UIRenderer(registry, patchSystem);
   uiRenderer.setJackLighting(state.fx['jackLighting'] ?? true);
