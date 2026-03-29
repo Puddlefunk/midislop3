@@ -1,5 +1,6 @@
 import App from './App.svelte';
 import { mount } from 'svelte';
+import './styles/panels.css';
 import { ModuleRegistry } from './core/ModuleRegistry';
 import { GameState }      from './game/GameState';
 import { GameEngine }     from './game/GameEngine';
