@@ -81,12 +81,16 @@ if (mainCanvas && patchCanvas) {
     onscreenKeyboard?.setOctave((e as CustomEvent<number>).detail);
   });
 
-  // Load saved panel positions if present
+  // Load saved panel positions if present — passed to Svelte App
+  // (also still applied to uiRenderer for parallel rendering during transition)
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
       const save = JSON.parse(raw);
-      if (save?.synth?.panelPositions) uiRenderer.positions = save.synth.panelPositions;
+      if (save?.synth?.panelPositions) {
+        if (uiRenderer) uiRenderer.positions = save.synth.panelPositions;
+        (app as any).setSavedPositions?.(save.synth.panelPositions);
+      }
     }
   } catch (_) {}
   resize();
@@ -213,7 +217,7 @@ function saveState(): void {
       version: 1,
       createdAt: new Date().toISOString(),
       game:  state.toJSON(),
-      synth: { ...registry.toJSON(), panelPositions: uiRenderer?.positions ?? {}, midiCCMap: midiLearn.toJSON() },
+      synth: { ...registry.toJSON(), panelPositions: (app as any).getPositions?.() ?? uiRenderer?.positions ?? {}, midiCCMap: midiLearn.toJSON() },
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   } catch (e) {

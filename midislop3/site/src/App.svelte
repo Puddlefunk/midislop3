@@ -2,11 +2,22 @@
   import { onMount } from 'svelte';
   import ClockPanel from './components/ClockPanel.svelte';
   import MenuPanel  from './components/MenuPanel.svelte';
+  import ModulePanel    from './components/panels/ModulePanel.svelte';
+  import GenericPanel   from './components/panels/GenericPanel.svelte';
+  import OscPanel       from './components/panels/OscPanel.svelte';
+  import FilterPanel    from './components/panels/FilterPanel.svelte';
+  import ChordPanel     from './components/panels/ChordPanel.svelte';
+  import MixerPanel     from './components/panels/MixerPanel.svelte';
+  import NoteSeqPanel   from './components/panels/NoteSeqPanel.svelte';
+  import DrumSeqPanel   from './components/panels/DrumSeqPanel.svelte';
+  import Jack from './components/panels/Jack.svelte';
   import type { GameState }    from './game/GameState';
   import type { GameEngine }   from './game/GameEngine';
   import type { ModuleRegistry } from './core/ModuleRegistry';
+  import type { ModuleInstance, ParamValue } from './types';
   import type { PatchSystem } from './ui/PatchSystem';
   import { setPanelContext } from './ui/context';
+  import { getModuleDef } from './config/modules';
   import { GAME_CONFIG } from './config/game';
 
   let { gameState, registry, gameEngine, patchSystem }: {
@@ -20,6 +31,21 @@
   // patchSystem is created before mount in main.ts so it is always non-null here
   if (patchSystem) {
     setPanelContext({ registry, patchSystem });
+  }
+
+  // ── Module panel state ────────────────────────────────────────
+  let modules        = $state<ModuleInstance[]>([]);
+  let savedPositions = $state<Record<string, { left: number; top: number }>>({});
+  let selectedIds    = $state<Set<string>>(new Set());
+
+  // Expose positions getter for main.ts save
+  export function getPositions(): Record<string, { left: number; top: number }> {
+    return savedPositions;
+  }
+
+  // Called by main.ts after load to restore saved panel positions
+  export function setSavedPositions(positions: Record<string, { left: number; top: number }>) {
+    savedPositions = { ...positions };
   }
 
   let midiStatus    = $state('connecting to MIDI...');
@@ -44,6 +70,26 @@
   let challengeAlpha = $state(1);
 
   onMount(() => {
+    // Subscribe to module registry — maintain reactive module list
+    registry.on('module-added', mod => {
+      modules = [...modules, mod];
+    });
+    registry.on('module-removed', ({ id }) => {
+      modules = modules.filter(m => m.id !== id);
+    });
+    // Also subscribe to param changes so panels re-render reactively
+    registry.on('param-changed', ({ id, param, value }) => {
+      modules = modules.map(m =>
+        m.id === id
+          ? { ...m, params: { ...m.params, [param]: value } }
+          : m
+      );
+    });
+    // Load modules already in registry at mount time
+    for (const mod of registry.modules.values()) {
+      modules = [...modules, mod];
+    }
+
     window.addEventListener('midi-status', (e: Event) => {
       midiStatus = (e as CustomEvent<string>).detail;
     });
@@ -134,6 +180,22 @@
     levelLabel   = gameState.currentLevel.label;
     shopUnlocked = gameState.shopUnlocked;
     streakCount  = gameState.streakCount;
+
+    // Handle position changes from ModulePanel drag
+    const panelsContainer = document.getElementById('panels-container');
+    if (panelsContainer) {
+      panelsContainer.addEventListener('positionchange', (e: Event) => {
+        const { id, left, top } = (e as CustomEvent<{ id: string; left: number; top: number }>).detail;
+        savedPositions = { ...savedPositions, [id]: { left, top } };
+      });
+      panelsContainer.addEventListener('selectiontoggle', (e: Event) => {
+        const { id } = (e as CustomEvent<{ id: string }>).detail;
+        const newSet = new Set(selectedIds);
+        if (newSet.has(id)) newSet.delete(id);
+        else newSet.add(id);
+        selectedIds = newSet;
+      });
+    }
   });
 
   function togglePlay() {
@@ -266,8 +328,55 @@
   <!-- Status bar -->
   <div id="status">{midiStatus}</div>
 
-  <!-- Module panels (spawned dynamically by UIRenderer into this container) -->
-  <div id="panels-container"></div>
+  <!-- Module panels rendered via Svelte component tree -->
+  <div id="panels-container">
+    {#each modules as mod (mod.id)}
+      {@const def = getModuleDef(mod.type)}
+      {#if def}
+        <ModulePanel
+          modId={mod.id}
+          type={mod.type}
+          initialPosition={savedPositions[mod.id] ?? null}
+          selected={selectedIds.has(mod.id)}
+        >
+          {#snippet children()}
+            {#if mod.type === 'vcf-x2'}
+              <FilterPanel modId={mod.id} type={mod.type} params={mod.params} />
+            {:else if mod.type === 'chord'}
+              <ChordPanel modId={mod.id} type={mod.type} params={mod.params} />
+            {:else if mod.type === 'mixer'}
+              <MixerPanel modId={mod.id} type={mod.type} params={mod.params} />
+            {:else if mod.type === 'noteSeq'}
+              <NoteSeqPanel modId={mod.id} type={mod.type} params={mod.params} />
+            {:else if mod.type === 'drumSeq'}
+              <DrumSeqPanel modId={mod.id} type={mod.type} params={mod.params} />
+            {:else if def.category === 'osc' || def.category === 'drum'}
+              <OscPanel modId={mod.id} type={mod.type} params={mod.params} />
+            {:else}
+              <GenericPanel modId={mod.id} type={mod.type} params={mod.params} />
+            {/if}
+          {/snippet}
+          {#snippet jacksL()}
+            {#each (def.inputPorts ?? []) as port}
+              {#if !port.name.startsWith('return-')}
+                <Jack modId={mod.id} port={port.name} isOut={false} signal={port.signal} />
+              {/if}
+            {/each}
+          {/snippet}
+          {#snippet jacksR()}
+            {#each (def.outputPorts ?? []) as port}
+              <Jack modId={mod.id} port={port.name} isOut={true} signal={port.signal} />
+            {/each}
+            {#each (def.inputPorts ?? []) as port}
+              {#if port.name.startsWith('return-')}
+                <Jack modId={mod.id} port={port.name} isOut={false} signal={port.signal} />
+              {/if}
+            {/each}
+          {/snippet}
+        </ModulePanel>
+      {/if}
+    {/each}
+  </div>
 
   <!-- Transport bar -->
   <ClockPanel state={gameState} />
