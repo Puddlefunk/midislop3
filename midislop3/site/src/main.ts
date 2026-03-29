@@ -7,7 +7,6 @@ import { NoteRouter }     from './input/NoteRouter';
 import { AudioGraph }     from './audio/AudioGraph';
 import { VisualEngine }   from './visuals/VisualEngine';
 import { PatchSystem }    from './ui/PatchSystem';
-import { UIRenderer }     from './ui/UIRenderer';
 import { ShopSystem }     from './ui/ShopSystem';
 import { OnscreenKeyboard }  from './input/OnscreenKeyboard';
 import { MidiLearnSystem }  from './input/MidiLearnSystem';
@@ -51,7 +50,6 @@ function resize() {
 
 let visualEngine:     VisualEngine     | null = null;
 const patchSystem = patchSystemEarly;
-let uiRenderer:       UIRenderer       | null = null;
 let onscreenKeyboard: OnscreenKeyboard | null = null;
 
 if (mainCanvas && patchCanvas) {
@@ -62,8 +60,6 @@ if (mainCanvas && patchCanvas) {
     height: window.innerHeight,
   });
   patchSystem.mount(patchCanvas);
-  // uiRenderer = new UIRenderer(registry, patchSystem);  // disabled — Svelte panels now handle rendering
-  uiRenderer = null;
   // Jack lighting is now handled via body class directly
   document.body.classList.toggle('no-jack-lighting', !(state.fx['jackLighting'] ?? true));
   state.on('fx', (v) => {
@@ -86,13 +82,11 @@ if (mainCanvas && patchCanvas) {
   });
 
   // Load saved panel positions if present — passed to Svelte App
-  // (also still applied to uiRenderer for parallel rendering during transition)
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
       const save = JSON.parse(raw);
       if (save?.synth?.panelPositions) {
-        if (uiRenderer) uiRenderer.positions = save.synth.panelPositions;
         (app as any).setSavedPositions?.(save.synth.panelPositions);
       }
     }
@@ -223,7 +217,7 @@ function saveState(): void {
       version: 1,
       createdAt: new Date().toISOString(),
       game:  state.toJSON(),
-      synth: { ...registry.toJSON(), panelPositions: (app as any).getPositions?.() ?? uiRenderer?.positions ?? {}, midiCCMap: midiLearn.toJSON() },
+      synth: { ...registry.toJSON(), panelPositions: (app as any).getPositions?.() ?? {}, midiCCMap: midiLearn.toJSON() },
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   } catch (e) {
