@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
   import { getPanelContext } from '../../ui/context';
   import { getModuleDef } from '../../config/modules';
-  import Jack from './Jack.svelte';
   import type { ParamValue } from '../../types';
 
   const { registry } = getPanelContext();
@@ -189,8 +188,3 @@
   <button class="seq-bars-btn" onclick={cycleBars}>BARS:{bars}</button>
 </div>
 
-<div class="seq-jacks">
-  {#each [0, 1, 2, 3] as i}
-    <Jack {modId} port="note-out-{i}" isOut={true} signal="note" />
-  {/each}
-</div>

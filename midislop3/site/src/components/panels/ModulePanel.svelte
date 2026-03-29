@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, type Snippet } from 'svelte';
+  import { onMount, tick, type Snippet } from 'svelte';
   import { getPanelContext } from '../../ui/context';
   import { getModuleDef } from '../../config/modules';
   import { findClearSpot } from '../../ui/panelLayout';
@@ -26,7 +26,7 @@
 
   let panelTopZ = 5;
 
-  onMount(() => {
+  onMount(async () => {
     if (initialPosition) {
       x = initialPosition.left;
       y = initialPosition.top;
@@ -46,6 +46,11 @@
       x = pos.left;
       y = pos.top;
     }
+    // Wait for x/y to be applied to DOM before reading jack positions.
+    // Jack.svelte onMount fires before this (children mount first), so jacks
+    // register at position 0,0. updateJackPositions re-reads after layout.
+    await tick();
+    patchSystem.updateJackPositions(modId);
     requestAnimationFrame(() => panelEl.classList.add('unlocked'));
 
     // Beat pulse

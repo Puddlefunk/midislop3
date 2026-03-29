@@ -21,15 +21,24 @@
 
   let canvasEl: HTMLCanvasElement;
   let focused = $state(false);
-  const size = 34;
-  const faderHeight = 84;
+  let size        = $state(34);
+  let faderWidth  = $state(22);
+  let faderHeight = $state(84);
 
   function v01() {
     return max > min ? (value - min) / (max - min) : 0;
   }
 
+  onMount(() => {
+    const em = parseFloat(getComputedStyle(canvasEl).fontSize);
+    size        = Math.round(em * 3.4);
+    faderWidth  = Math.round(em * 2.2);
+    faderHeight = Math.round(em * 8.4);
+  });
+
   $effect(() => {
     if (!canvasEl) return;
+    void size; // track canvas size changes as a dependency
     // SWAP POINT: replace the draw call below to change knob rendering style
     if (isFader) drawFader(canvasEl, v01(), hue, focused);
     else if (bipolar) drawBipolarKnob(canvasEl, v01(), hue, focused);
@@ -84,7 +93,7 @@
   <canvas
     bind:this={canvasEl}
     class="knob-canvas {isFader ? 'fader-canvas' : ''}"
-    width={isFader ? 22 : size}
+    width={isFader ? faderWidth : size}
     height={isFader ? faderHeight : size}
     data-module={moduleId}
     data-param={param}

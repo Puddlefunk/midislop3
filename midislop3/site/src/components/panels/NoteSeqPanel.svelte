@@ -4,7 +4,6 @@
   import { getModuleDef } from '../../config/modules';
   import { noteHue, NOTE_NAMES, SCALE_INTERVALS } from '../../config/helpers';
   import Knob from './Knob.svelte';
-  import Jack from './Jack.svelte';
   import type { ParamValue } from '../../types';
   import type { NoteName } from '../../config/helpers';
 
@@ -238,7 +237,7 @@
           class:vel-1={cell.vel === 1}
           class:vel-2={cell.vel === 2}
           class:vel-3={cell.vel === 3}
-          style="--ph:{cell.cellHue}"
+          style="--ch:{cell.cellHue}"
           data-step={cell.col}
           data-row={cell.row}
         ></div>
@@ -255,6 +254,3 @@
   <button class="seq-fold-btn" class:active={fold} onclick={toggleFold}>FOLD</button>
 </div>
 
-<div class="seq-jacks">
-  <Jack {modId} port="note-out" isOut={true} signal="note" />
-</div>

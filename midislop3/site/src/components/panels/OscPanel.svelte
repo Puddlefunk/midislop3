@@ -51,9 +51,18 @@
   }
 
   let waveCanvas: HTMLCanvasElement;
+  let waveW = $state(90);
+  let waveH = $state(28);
+
+  onMount(() => {
+    const em = parseFloat(getComputedStyle(waveCanvas).fontSize);
+    waveW = Math.round(em * 9);
+    waveH = Math.round(em * 2.8);
+  });
 
   $effect(() => {
     if (!waveCanvas) return;
+    void waveW;
     const paramVal = specialParam ? ((params[specialParam] as number) ?? 0) : 0;
     drawWavePreview(waveCanvas, getPreviewWf(), paramVal);
   });
@@ -74,11 +83,11 @@
 <canvas
   bind:this={waveCanvas}
   class="wave-preview"
-  width="90"
-  height="28"
+  width={waveW}
+  height={waveH}
 ></canvas>
 
-<div class="osc-body">
+<div class="synth-hgroup">
   <Knob
     moduleId={modId}
     param="level"
@@ -90,6 +99,19 @@
     {hue}
     defaultValue={(def.defaultParams['level'] as number) ?? 0.8}
   />
+  {#if specialParam && specialParam !== 'level' && def.paramDefs[specialParam]}
+    <Knob
+      moduleId={modId}
+      param={specialParam}
+      value={(params[specialParam] as number) ?? 0}
+      min={def.paramDefs[specialParam].min}
+      max={def.paramDefs[specialParam].max}
+      label={specialLabel}
+      format={def.paramDefs[specialParam].format}
+      {hue}
+      defaultValue={(def.defaultParams[specialParam] as number) ?? 0}
+    />
+  {/if}
 </div>
 
 {#if !isNoise}
@@ -121,22 +143,6 @@
         onclick={() => setWaveform(btn.wf)}
       >{btn.lbl}</button>
     {/each}
-  </div>
-{/if}
-
-{#if specialParam && specialParam !== 'level' && def.paramDefs[specialParam]}
-  <div class="osc-special">
-    <Knob
-      moduleId={modId}
-      param={specialParam}
-      value={(params[specialParam] as number) ?? 0}
-      min={def.paramDefs[specialParam].min}
-      max={def.paramDefs[specialParam].max}
-      label={specialLabel}
-      format={def.paramDefs[specialParam].format}
-      {hue}
-      defaultValue={(def.defaultParams[specialParam] as number) ?? 0}
-    />
   </div>
 {/if}
 

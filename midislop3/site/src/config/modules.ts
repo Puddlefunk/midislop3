@@ -12,6 +12,8 @@ const audioIn  = (name = 'audio', label = 'IN')  => ({ name, signal: 'audio' as 
 const audioOut = (name = 'audio', label = 'OUT') => ({ name, signal: 'audio' as const, label, multi: true });
 const noteIn   = (name = 'note-in',  label = 'NOTE IN')  => ({ name, signal: 'note' as const, label });
 const noteOut  = (name = 'note-out', label = 'NOTE OUT') => ({ name, signal: 'note' as const, label, multi: true });
+const sendIn   = (name: string, label: string) => ({ name, signal: 'send' as const, label });
+const sendOut  = (name: string, label: string) => ({ name, signal: 'send' as const, label, multi: true });
 
 // ─────────────────────────────────────────────────────────────
 // Category-level port defaults
@@ -224,8 +226,8 @@ export const MODULE_TYPE_DEFS: Record<string, ModuleDef> = {
   // ── Utility ──────────────────────────────────────────────────
   'mixer': {
     label: 'MIX', category: 'utility', hue: 210,
-    inputPorts:  [audioIn('in-0', 'IN1'), audioIn('in-1', 'IN2'), audioIn('in-2', 'IN3'), audioIn('in-3', 'IN4'), audioIn('return-0', 'RTN-A'), audioIn('return-1', 'RTN-B')],
-    outputPorts: [audioOut('audio-0', 'OUT1'), audioOut('audio-1', 'OUT2'), audioOut('send-0', 'SND-A'), audioOut('send-1', 'SND-B')],
+    inputPorts:  [audioIn('in-0', 'IN1'), audioIn('in-1', 'IN2'), audioIn('in-2', 'IN3'), audioIn('in-3', 'IN4'), sendIn('return-0', 'RTN-A'), sendIn('return-1', 'RTN-B')],
+    outputPorts: [audioOut('audio-0', 'OUT1'), audioOut('audio-1', 'OUT2'), sendOut('send-0', 'SND-A'), sendOut('send-1', 'SND-B')],
     defaultParams: {
       level: 1.0,
       'level-in-0': 1.0, 'level-in-1': 1.0, 'level-in-2': 1.0, 'level-in-3': 1.0,
