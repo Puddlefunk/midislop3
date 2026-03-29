@@ -62,9 +62,13 @@ if (mainCanvas && patchCanvas) {
     height: window.innerHeight,
   });
   patchSystem.mount(patchCanvas);
-  uiRenderer = new UIRenderer(registry, patchSystem);
-  uiRenderer.setJackLighting(state.fx['jackLighting'] ?? true);
-  state.on('fx', (v) => uiRenderer?.setJackLighting((v as Record<string,boolean>)['jackLighting'] ?? true));
+  // uiRenderer = new UIRenderer(registry, patchSystem);  // disabled — Svelte panels now handle rendering
+  uiRenderer = null;
+  // Jack lighting is now handled via body class directly
+  document.body.classList.toggle('no-jack-lighting', !(state.fx['jackLighting'] ?? true));
+  state.on('fx', (v) => {
+    document.body.classList.toggle('no-jack-lighting', !((v as Record<string,boolean>)['jackLighting'] ?? true));
+  });
   const shopSystem = new ShopSystem(registry, state, router, audioGraph, saveState);
   (window as unknown as Record<string, unknown>)['shopSystem'] = shopSystem;
   window.addEventListener('toggle-shop', () => shopSystem.toggle());
@@ -118,11 +122,13 @@ if (mainCanvas && patchCanvas) {
   visualEngine.setFrameCallback(() => {
     patchSystem!.draw();
     gameEngine.update();
-    // Seq playhead sync — check if scheduled step time has arrived
-    if (audioGraph.ctx && audioGraph.seqPlayheads.size > 0 && uiRenderer) {
+    // Seq playhead sync — dispatch window event for Svelte panel components
+    if (audioGraph.ctx && audioGraph.seqPlayheads.size > 0) {
       const now = audioGraph.ctx.currentTime;
       for (const [seqId, ph] of audioGraph.seqPlayheads) {
-        if (now >= ph.audioTime) uiRenderer.setSeqPlayhead(seqId, ph.step, ph.row);
+        if (now >= ph.audioTime) {
+          window.dispatchEvent(new CustomEvent('seq-playhead', { detail: { id: seqId, step: ph.step, row: ph.row } }));
+        }
       }
     }
   });
@@ -152,12 +158,12 @@ state.on('internalBpm', (v) => {
 // Sync rootKey changes to transport and sequencer grid colours
 state.on('rootKey', (v) => {
   if (audioGraph.transport) audioGraph.transport.setRootKey(v as string);
-  uiRenderer?.setRootKey(v as string);
+  window.dispatchEvent(new CustomEvent('root-key-change', { detail: v as string }));
 });
 
 // Sync scaleType changes to sequencer grid fold filter
 state.on('scaleType', (v) => {
-  uiRenderer?.setScaleType(v as string);
+  window.dispatchEvent(new CustomEvent('scale-type-change', { detail: v as string }));
 });
 
 // ── CV migration — strip legacy CV modules and patches from old saves ──────
